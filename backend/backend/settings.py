@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'users',
     'reports',
     'api',
+    'designs',
 ]
 
 from datetime import timedelta
