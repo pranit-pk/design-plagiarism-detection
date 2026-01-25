@@ -1,7 +1,6 @@
-from typing import Dict, Tuple
+from typing import Dict
 
-
-# Metric weights (must sum to 1.0)
+# Phase 2: Explicit metric weights (must sum to 1.0)
 WEIGHTS = {
     "pixel": 0.15,
     "ssim": 0.35,
@@ -13,21 +12,24 @@ WEIGHTS = {
 def compute_final_score(scores: Dict[str, float]) -> float:
     """
     Compute weighted final similarity score.
+    All scores are assumed to be normalized in [0, 1].
     """
     final_score = 0.0
-    for metric, weight in WEIGHTS.items():
-        final_score += weight * scores.get(metric, 0.0)
 
-    return round(final_score, 4)
+    for metric, score in scores.items():
+        weight = WEIGHTS.get(metric, 0.0)
+        final_score += score * weight
+
+    return round(final_score, 3)
 
 
-def get_verdict(score: float) -> str:
+def get_verdict(final_score: float) -> str:
     """
-    Determine similarity verdict based on final score.
+    Convert final score into a human-readable verdict.
     """
-    if score >= 0.75:
+    if final_score >= 0.75:
         return "High Similarity"
-    elif score >= 0.5:
+    elif final_score >= 0.45:
         return "Moderate Similarity"
     else:
         return "Low Similarity"
@@ -35,20 +37,12 @@ def get_verdict(score: float) -> str:
 
 def generate_explanation(scores: Dict[str, float]) -> str:
     """
-    Generate a human-readable explanation for the verdict.
+    Generate a simple explanation based on the dominant metric.
     """
-    explanations = []
+    dominant_metric = max(scores, key=scores.get)
+    dominant_score = scores[dominant_metric]
 
-    if scores["ssim"] >= 0.7:
-        explanations.append("strong structural similarity")
-    if scores["orb"] >= 0.6:
-        explanations.append("high feature correspondence")
-    if scores["histogram"] >= 0.6:
-        explanations.append("similar color distribution")
-    if scores["pixel"] >= 0.9:
-        explanations.append("near-identical pixel match")
-
-    if not explanations:
-        return "Low similarity across structure, features, and color"
-
-    return "Detected " + ", ".join(explanations)
+    return (
+        f"The similarity is primarily driven by {dominant_metric.upper()} "
+        f"with a score of {dominant_score:.2f}."
+    )
