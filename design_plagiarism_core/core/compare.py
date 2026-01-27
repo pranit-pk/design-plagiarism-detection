@@ -6,6 +6,8 @@ from .metrics.ssim import ssim_similarity
 from .metrics.orb import orb_similarity
 from .metrics.histogram import histogram_similarity
 from .scoring import compute_final_score, get_verdict, generate_explanation
+from .scoring import plagiarism_decision
+
 
 
 def compare_images(image_path_1: str, image_path_2: str) -> Dict:
@@ -33,13 +35,16 @@ def compare_images(image_path_1: str, image_path_2: str) -> Dict:
     final_score = compute_final_score(scores)
     verdict = get_verdict(final_score)
     explanation = generate_explanation(scores)
+    decision = plagiarism_decision(final_score)
+
 
     # Final report
     report = {
         "scores": scores,
         "final_score": final_score,
-        "verdict": verdict,
-        "explanation": explanation,
+        "verdict": verdict,        # ✅ KEEP verdict
+        "decision": decision,
     }
+
 
     return report

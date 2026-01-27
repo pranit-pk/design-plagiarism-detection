@@ -46,3 +46,24 @@ def generate_explanation(scores: Dict[str, float]) -> str:
         f"The similarity is primarily driven by {dominant_metric.upper()} "
         f"with a score of {dominant_score:.2f}."
     )
+
+def plagiarism_decision(final_score: float) -> dict:
+    if final_score >= 0.75:
+        return {
+            "plagiarism": True,
+            "confidence": "HIGH",
+            "reason": "High structural and visual similarity detected across multiple metrics."
+        }
+
+    if final_score >= 0.5:
+        return {
+            "plagiarism": True,
+            "confidence": "MEDIUM",
+            "reason": "Moderate similarity detected. Manual review recommended."
+        }
+
+    return {
+        "plagiarism": False,
+        "confidence": "LOW",
+        "reason": "Similarity is below acceptable plagiarism thresholds."
+    }
