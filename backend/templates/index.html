@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Design Plagiarism Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input[type="file"] {
+      width: 100%;
+      padding: 6px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #555;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #f1f1f1;
+    }
+    .result p {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Design Plagiarism Detection</h1>
+  <div class="container">
+    <form id="compareForm">
+      <label for="image1">Upload Image 1:</label>
+      <input type="file" id="image1" name="image_1" accept="image/*" required>
+
+      <label for="image2">Upload Image 2:</label>
+      <input type="file" id="image2" name="image_2" accept="image/*" required>
+
+      <button type="submit">Compare</button>
+    </form>
+
+    <div id="response" class="result" style="display:none;"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('compareForm');
+    const responseDiv = document.getElementById('response');
+
+    // Replace with your actual JWT token
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const file1 = document.getElementById('image1').files[0];
+      const file2 = document.getElementById('image2').files[0];
+
+      if (!file1 || !file2) {
+        alert("Please upload both images.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("image_1", file1);
+      formData.append("image_2", file2);
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/compare/", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!res.ok) {
+          throw new Error("API request failed with status " + res.status);
+        }
+
+        const data = await res.json();
+
+        responseDiv.style.display = "block";
+        const result = data.pairwise_result;
+
+        responseDiv.innerHTML = `
+          <p><strong>Final Score:</strong> ${result.final_score}</p>
+          <p><strong>Verdict:</strong> ${result["similarity label"]}</p>
+          <p><strong>Plagiarism:</strong> ${result.decision.plagiarism ? "YES" : "NO"}</p>
+          <p><strong>Confidence:</strong> ${result.decision.confidence}</p>
+          <p><strong>Explanation:</strong> ${result.decision.reason}</p>
+        `;
+
+      } catch (err) {
+        responseDiv.style.display = "block";
+        responseDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

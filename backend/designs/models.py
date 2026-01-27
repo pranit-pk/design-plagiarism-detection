@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class DesignImage(models.Model):
@@ -10,11 +11,12 @@ class DesignImage(models.Model):
 
     image = models.ImageField(upload_to="designs/")
     uploaded_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="design_images"
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"DesignImage {self.id} by {self.uploaded_by}"
